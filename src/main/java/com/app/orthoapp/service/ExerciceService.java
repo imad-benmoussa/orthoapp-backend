@@ -33,7 +33,7 @@ public class ExerciceService {
                 .orElseThrow(() -> new RuntimeException("Exercices group not found"));
 
         try {
-            String uploadDir = new File("src/main/resources/static/uploads/").getAbsolutePath();
+            String uploadDir = System.getProperty("user.home") + "/orthoapp/uploads";
             Files.createDirectories(Paths.get(uploadDir));
 
             String audioFileName = UUID.randomUUID() + "_" + audio.getOriginalFilename();

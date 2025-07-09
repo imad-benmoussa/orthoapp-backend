@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -108,8 +109,8 @@ public class CompterenduService {
 
     public byte[] generatePdf(Map<String, String> data) throws IOException, Docx4JException {
         // Load the template
-        File template = new ClassPathResource("templates/compterendu.docx").getFile();
-        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(template);
+        InputStream templateStream = new ClassPathResource("templates/compterendu.docx").getInputStream();
+        WordprocessingMLPackage wordMLPackage = WordprocessingMLPackage.load(templateStream);
 
         // Convertir Map<String, String> en Map<DataFieldName, String>
         Map<DataFieldName, String> mergedData = new HashMap<>();
