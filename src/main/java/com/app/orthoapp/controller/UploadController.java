@@ -17,7 +17,7 @@ import java.util.zip.ZipInputStream;
 @RequestMapping("/admin")
 public class UploadController {
 
-    @PostMapping("/admin/upload-uploads-zip")
+    @PostMapping("/upload-uploads-zip")
     public ResponseEntity<String> uploadUploadsZip(@RequestParam("file") MultipartFile zipFile) {
         try {
             // Dossier de destination : /uploads
