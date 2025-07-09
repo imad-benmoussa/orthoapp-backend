@@ -5,6 +5,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -12,39 +16,43 @@ import java.util.zip.ZipInputStream;
 @RequestMapping("/admin")
 public class UploadController {
 
-    @PostMapping("/upload-uploads-zip")
-    public ResponseEntity<String> uploadZip(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/admin/upload-uploads-zip")
+    public ResponseEntity<String> uploadUploadsZip(@RequestParam("file") MultipartFile zipFile) {
         try {
-            // 📁 Créer le dossier destination s’il n’existe pas
-            File uploadDir = new File("/home/render/orthoapp/uploads");
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
+            // Dossier de destination : /uploads
+            Path uploadsDir = Paths.get("uploads");
+
+            // 🔁 S'assurer que "uploads" est un dossier
+            File uploadsFile = uploadsDir.toFile();
+            if (uploadsFile.exists() && !uploadsFile.isDirectory()) {
+                uploadsFile.delete(); // ❌ supprime si c’est un fichier
             }
+            Files.createDirectories(uploadsDir);
 
-            // 💾 Enregistrer temporairement le fichier zip
-            File tempZip = new File("/home/render/orthoapp/uploads.zip");
-            file.transferTo(tempZip);
+            // 🔧 Sauvegarder temporairement le zip
+            Path tempZip = Files.createTempFile("uploads-", ".zip");
+            zipFile.transferTo(tempZip.toFile());
 
-            // 📦 Extraire le contenu du zip
-            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(tempZip))) {
+            // ✅ Extraction
+            try (ZipInputStream zis = new ZipInputStream(new FileInputStream(tempZip.toFile()))) {
                 ZipEntry entry;
                 while ((entry = zis.getNextEntry()) != null) {
-                    File outFile = new File(uploadDir, entry.getName());
-
-                    // Créer les sous-dossiers si nécessaire
-                    outFile.getParentFile().mkdirs();
-
-                    try (FileOutputStream fos = new FileOutputStream(outFile)) {
-                        zis.transferTo(fos);
+                    Path filePath = uploadsDir.resolve(entry.getName());
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(filePath);
+                    } else {
+                        Files.createDirectories(filePath.getParent()); // dossier parent
+                        Files.copy(zis, filePath, StandardCopyOption.REPLACE_EXISTING);
                     }
                     zis.closeEntry();
                 }
             }
 
-            return ResponseEntity.ok("✅ Fichiers extraits avec succès.");
+            return ResponseEntity.ok("✅ Fichiers uploads restaurés avec succès !");
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("❌ Erreur : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("❌ Erreur : " + e.getMessage());
         }
     }
 }
