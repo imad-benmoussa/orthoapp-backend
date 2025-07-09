@@ -11,6 +11,6 @@ public class StaticResourceConfiguration implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Pour que /uploads/** dans les URLs pointe vers les fichiers externes
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + System.getProperty("user.home") + "/orthoapp/uploads/");
+                .addResourceLocations("file:/app/uploads/");
     }
 }
